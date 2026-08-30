@@ -8,12 +8,13 @@ App personal de **control de gastos** (no de saldo/balance) para un único usuar
 
 El plan funcional completo y el modelo de datos detallado viven en `/home/carlos/.claude/plans/hola-necesito-hacer-una-wondrous-stearns.md` — consultarlo antes de implementar features nuevas. Este archivo es un resumen operativo, no reemplaza el plan.
 
-## Stack (pendiente de confirmar / actualizar aquí en cuanto se decida)
+## Stack (confirmado)
 
-- Frontend: PWA, framework por definir (React/Vue/Svelte).
+- Frontend: **React + Vite + TypeScript**, PWA (vite-plugin-pwa pendiente de configurar).
 - Backend: Firebase (Auth + Firestore), Firebase Hosting para el despliegue final.
-- Auth: un único usuario administrador (sin registro público).
-- Offline: persistencia offline nativa de Firestore.
+- Auth: **email/password**, un único usuario administrador dado de alta manualmente desde la consola de Firebase (sin registro público). UID del dueño en `VITE_OWNER_UID` (`.env`, no versionado).
+- Gráficas: Recharts. Fechas: date-fns. PDF: jsPDF.
+- Offline: persistencia offline nativa de Firestore (`persistentLocalCache`).
 
 ## Repositorio y Firebase
 
@@ -68,6 +69,24 @@ Detalle completo de campos en el plan referenciado arriba.
 - Mantener la app corriendo en **localhost** durante el desarrollo para que el usuario la revise en el navegador.
 - El despliegue a Firebase Hosting se hace hasta que el usuario comparta su configuración de Firebase.
 
+## Backlog y avance
+
+Porcentaje de avance por fase (ver detalle de cada fase en el plan). Actualizar esta tabla conforme se completen tareas.
+
+| # | Fase | Avance | Notas |
+|---|------|--------|-------|
+| 1 | Base del proyecto (scaffold, Firebase, capas, íconos SVG, tokens de tema) | 100% | React+Vite+TS, Firebase Auth/Firestore conectados, layout con nav, 3 temas, set de íconos SVG |
+| 2 | MVP (auth, cuentas, categorías, gastos puntuales, dashboard básico) | 55% | Login + cuentas + categorías (CRUD real contra Firestore) listos; falta alta de gastos puntuales y dashboard con totales reales |
+| 3 | Recurrentes | 0% | No iniciado |
+| 4 | Comparativas e histórico (`monthlySummaries`) | 0% | No iniciado |
+| 5 | Insights/predicción | 0% | No iniciado |
+| 6 | Campos extendidos y reporte de combustible | 10% | Entidad `Category.fieldsTemplate: 'fuel'` y toggle en alta de categoría ya existen; falta el formulario de gasto y el reporte |
+| 7 | Respaldo y PDF (export/import JSON, estado de cuenta en PDF) | 0% | No iniciado |
+| 8 | Configuración avanzada y PWA polish (temas, zoom, manifest, service worker) | 35% | Selector de tema y control de zoom funcionando; falta manifest.json/service worker (vite-plugin-pwa ya instalado, sin configurar) |
+| 9 | Despliegue a Firebase Hosting | 0% | Pendiente de que el usuario lo pida explícitamente |
+
+**Avance global estimado: ~22%**
+
 ## Estado actual
 
-Proyecto aún no inicializado (sin código, sin stack elegido). Antes de generar el scaffold inicial, confirmar con el usuario: framework de frontend, método de login (email/password vs. Google Sign-In), y acceso al repo de GitHub.
+App de React + Vite + TS corriendo en `localhost:5173`, conectada al proyecto Firebase `gasto-w` (Auth + Firestore con persistencia offline). Login con email/password funcional, layout con navegación por íconos SVG, y las páginas de **Cuentas** y **Categorías** con alta/listado real contra Firestore (categorías con seed de default). Configuración con selector de 3 temas y control de zoom, ambos persistentes. Reglas de Firestore (`firebase/firestore.rules`) restringidas al UID del dueño. Pendiente inmediato: alta de gastos puntuales y dashboard con totales reales.

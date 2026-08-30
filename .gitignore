@@ -1,11 +1,27 @@
+# Dependencies / build output
 node_modules/
 dist/
+dist-ssr/
 build/
+
+# Env / secrets
 .env
 .env.*
 !.env.example
 *.local
+firebase-service-account*.json
+
+# Firebase tooling
 .firebase/
 firebase-debug.log
-firebase-service-account*.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store

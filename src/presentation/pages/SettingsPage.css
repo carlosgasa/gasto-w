@@ -1,0 +1,45 @@
+.theme-options {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.4rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.theme-option.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.zoom-control input[type="range"] {
+  flex: 1;
+  accent-color: var(--primary);
+}
+
+.zoom-control span {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 3.2rem;
+  text-align: right;
+}
