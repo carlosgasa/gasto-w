@@ -33,9 +33,15 @@ export async function archiveCategory(repo: CategoryRepository, id: string): Pro
 }
 
 /**
- * Quita duplicados exactos (mismo nombre, sin distinguir mayúsculas) dejando
- * solo el más antiguo de cada grupo. Pensado como limpieza puntual para el
- * bug de sembrado con condición de carrera que ya quedó corregido.
+ * Archiva duplicados exactos (mismo nombre, sin distinguir mayúsculas) entre
+ * las categorías ACTIVAS, dejando una sola visible por nombre. Archiva en vez
+ * de borrar a propósito: si ya registraste un gasto con la categoría
+ * duplicada, ese gasto no se rompe (categoryId sigue existiendo), solo deja
+ * de aparecer en los selectores y en la lista.
+ *
+ * Prefiere conservar la que tiene ID determinístico ("default-...") si existe
+ * en el grupo, porque es la que las futuras siembras de categorías por
+ * default van a seguir reconociendo.
  */
 export async function removeDuplicateCategories(
   repo: CategoryRepository,
@@ -43,22 +49,29 @@ export async function removeDuplicateCategories(
 ): Promise<number> {
   const groups = new Map<string, Category[]>();
   for (const category of categories) {
+    if (!category.active) continue;
     const key = category.name.trim().toLowerCase();
     const group = groups.get(key) ?? [];
     group.push(category);
     groups.set(key, group);
   }
 
-  const toRemove: Category[] = [];
+  const toArchive: Category[] = [];
   for (const group of groups.values()) {
     if (group.length <= 1) continue;
-    const [, ...rest] = [...group].sort((a, b) => a.createdAt - b.createdAt);
-    toRemove.push(...rest);
+
+    const preferred =
+      group.find((c) => c.id.startsWith("default-")) ??
+      [...group].sort((a, b) => a.createdAt - b.createdAt)[0];
+
+    for (const category of group) {
+      if (category.id !== preferred.id) toArchive.push(category);
+    }
   }
 
-  for (const category of toRemove) {
-    await repo.remove(category.id);
+  for (const category of toArchive) {
+    await repo.setActive(category.id, false);
   }
 
-  return toRemove.length;
+  return toArchive.length;
 }

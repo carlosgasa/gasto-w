@@ -6,13 +6,16 @@ import { signOutUser } from "../../infrastructure/firebase/authService";
 import { FirestoreExpenseRepository } from "../../infrastructure/firebase/FirestoreExpenseRepository";
 import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase/FirestoreMonthlySummaryRepository";
 import { FirestoreRecurringTemplateRepository } from "../../infrastructure/firebase/FirestoreRecurringTemplateRepository";
+import { FirestoreCategoryRepository } from "../../infrastructure/firebase/FirestoreCategoryRepository";
 import { generateRecurringExpensesForMonth } from "../../application/use-cases/manageRecurring";
+import { removeDuplicateCategories } from "../../application/use-cases/manageCategories";
 import { currentMonth } from "../format";
 import "./AppLayout.css";
 
 const expenseRepo = new FirestoreExpenseRepository();
 const summaryRepo = new FirestoreMonthlySummaryRepository();
 const templateRepo = new FirestoreRecurringTemplateRepository();
+const categoryRepo = new FirestoreCategoryRepository();
 
 const NAV_ITEMS: { to: string; label: string; icon: IconName }[] = [
   { to: "/", label: "Agregar gasto", icon: "expenses" },
@@ -35,6 +38,16 @@ export function AppLayout() {
       )
       .catch(() => {
         // silencioso: si falla, el usuario igual puede registrar el gasto a mano
+      });
+
+    // Limpieza automática de categorías duplicadas (secuela del bug de
+    // sembrado ya corregido): se archivan solas al abrir la app, sin
+    // importar en qué pantalla entre el usuario primero.
+    categoryRepo
+      .list()
+      .then((categories) => removeDuplicateCategories(categoryRepo, categories))
+      .catch(() => {
+        // silencioso: si falla, el botón "Quitar duplicados" en Categorías sigue disponible
       });
   }, []);
 

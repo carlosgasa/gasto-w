@@ -44,21 +44,21 @@ export function CategoriesPage() {
 
   const active = useMemo(() => categories.filter((c) => c.active), [categories]);
 
+  const duplicateCount = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const c of active) {
+      const key = c.name.trim().toLowerCase();
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+    }
+    return [...seen.values()].reduce((sum, count) => sum + (count > 1 ? count - 1 : 0), 0);
+  }, [active]);
+
   const iconOptions: IconSelectOption[] = ICON_CHOICES.map((c) => ({
     value: c.icon,
     label: c.label,
     icon: c.icon,
     color,
   }));
-
-  const duplicateCount = useMemo(() => {
-    const seen = new Map<string, number>();
-    for (const c of categories) {
-      const key = c.name.trim().toLowerCase();
-      seen.set(key, (seen.get(key) ?? 0) + 1);
-    }
-    return [...seen.values()].reduce((sum, count) => sum + (count > 1 ? count - 1 : 0), 0);
-  }, [categories]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
