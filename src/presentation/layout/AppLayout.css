@@ -5,15 +5,16 @@
   background: var(--bg);
 }
 
-@media (max-width: 56rem) {
-  .app-shell {
-    grid-template-columns: 4.5rem 1fr;
-  }
-  .app-brand span,
-  .app-nav-item span,
-  .app-logout span {
-    display: none;
-  }
+.app-topbar {
+  display: none;
+}
+
+.app-scrim {
+  display: none;
+}
+
+.app-brand-desktop {
+  display: flex;
 }
 
 .app-sidebar {
@@ -85,4 +86,79 @@
 .app-content {
   padding: 2rem 2.25rem;
   overflow-x: auto;
+}
+
+/* --- Móvil: sidebar se vuelve un cajón (drawer) con menú hamburguesa --- */
+@media (max-width: 56rem) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .app-brand-desktop {
+    display: none;
+  }
+
+  .app-hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .app-hamburger span {
+    display: block;
+    height: 2px;
+    margin: 0 auto;
+    width: 1.15rem;
+    background: var(--text);
+    border-radius: 1px;
+  }
+
+  .app-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 35;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 16rem;
+    max-width: 82vw;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 24px 0 48px -24px rgba(0, 0, 0, 0.4);
+  }
+
+  .app-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .app-content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
 }

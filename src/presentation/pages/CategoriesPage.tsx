@@ -5,23 +5,25 @@ import {
   archiveCategory,
   createCategory,
   ensureDefaultCategories,
+  removeDuplicateCategories,
 } from "../../application/use-cases/manageCategories";
 import { Icon, type IconName } from "../icons/Icon";
+import { IconSelect, type IconSelectOption } from "../components/IconSelect";
 import "./pages.css";
 
 const repo = new FirestoreCategoryRepository();
 
-const ICON_CHOICES: IconName[] = [
-  "food",
-  "transport",
-  "fuel",
-  "entertainment",
-  "health",
-  "services",
-  "home",
-  "clothing",
-  "education",
-  "other",
+const ICON_CHOICES: { icon: IconName; label: string }[] = [
+  { icon: "food", label: "Comida" },
+  { icon: "transport", label: "Transporte" },
+  { icon: "fuel", label: "Combustible" },
+  { icon: "entertainment", label: "Entretenimiento" },
+  { icon: "health", label: "Salud" },
+  { icon: "services", label: "Servicios" },
+  { icon: "home", label: "Hogar" },
+  { icon: "clothing", label: "Ropa" },
+  { icon: "education", label: "Educación" },
+  { icon: "other", label: "Otros" },
 ];
 
 const COLOR_CHOICES = ["#E0663F", "#3F8CE0", "#D69A1F", "#9B24DE", "#3FAE6B", "#5B6EE0", "#D14F8C", "#8A7A99"];
@@ -33,6 +35,7 @@ export function CategoriesPage() {
   const [color, setColor] = useState(COLOR_CHOICES[0]);
   const [isFuel, setIsFuel] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
 
   useEffect(() => {
     ensureDefaultCategories(repo);
@@ -40,6 +43,22 @@ export function CategoriesPage() {
   }, []);
 
   const active = useMemo(() => categories.filter((c) => c.active), [categories]);
+
+  const iconOptions: IconSelectOption[] = ICON_CHOICES.map((c) => ({
+    value: c.icon,
+    label: c.label,
+    icon: c.icon,
+    color,
+  }));
+
+  const duplicateCount = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const c of categories) {
+      const key = c.name.trim().toLowerCase();
+      seen.set(key, (seen.get(key) ?? 0) + 1);
+    }
+    return [...seen.values()].reduce((sum, count) => sum + (count > 1 ? count - 1 : 0), 0);
+  }, [categories]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -51,6 +70,15 @@ export function CategoriesPage() {
       setIsFuel(false);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRemoveDuplicates() {
+    setCleaning(true);
+    try {
+      await removeDuplicateCategories(repo, categories);
+    } finally {
+      setCleaning(false);
     }
   }
 
@@ -70,23 +98,22 @@ export function CategoriesPage() {
           </label>
           <label className="field">
             Ícono
-            <select value={icon} onChange={(e) => setIcon(e.target.value as IconName)}>
-              {ICON_CHOICES.map((choice) => (
-                <option key={choice} value={choice}>
-                  {choice}
-                </option>
-              ))}
-            </select>
+            <IconSelect value={icon} onChange={(v) => setIcon(v as IconName)} options={iconOptions} />
           </label>
           <label className="field">
             Color
-            <select value={color} onChange={(e) => setColor(e.target.value)}>
+            <div className="color-swatch-picker">
               {COLOR_CHOICES.map((choice) => (
-                <option key={choice} value={choice} style={{ color: choice }}>
-                  {choice}
-                </option>
+                <button
+                  type="button"
+                  key={choice}
+                  className={`color-swatch-option${choice === color ? " is-selected" : ""}`}
+                  style={{ background: choice }}
+                  aria-label={choice}
+                  onClick={() => setColor(choice)}
+                />
               ))}
-            </select>
+            </div>
           </label>
           <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: "0.4rem" }}>
             <input type="checkbox" checked={isFuel} onChange={(e) => setIsFuel(e.target.checked)} style={{ minWidth: 0 }} />
@@ -100,7 +127,14 @@ export function CategoriesPage() {
       </div>
 
       <div className="card">
-        <h2>Tus categorías</h2>
+        <div className="list-header">
+          <h2>Tus categorías</h2>
+          {duplicateCount > 0 && (
+            <button className="btn-ghost" onClick={handleRemoveDuplicates} disabled={cleaning}>
+              Quitar {duplicateCount} duplicado{duplicateCount === 1 ? "" : "s"}
+            </button>
+          )}
+        </div>
         {active.length === 0 ? (
           <p className="empty-hint">Cargando categorías…</p>
         ) : (

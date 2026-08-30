@@ -26,11 +26,11 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<DashboardPage />} />
+              <Route path="/" element={<ExpensesPage />} />
+              <Route path="/resumen" element={<DashboardPage />} />
               <Route path="/cuentas" element={<AccountsPage />} />
               <Route path="/categorias" element={<CategoriesPage />} />
               <Route path="/configuracion" element={<SettingsPage />} />
-              <Route path="/gastos" element={<ExpensesPage />} />
               <Route path="/recurrentes" element={<RecurringPage />} />
               <Route path="/reportes" element={<ReportsPage />} />
             </Route>

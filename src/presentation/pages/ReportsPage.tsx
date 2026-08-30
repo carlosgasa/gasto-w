@@ -25,7 +25,6 @@ import { FirestoreExpenseRepository } from "../../infrastructure/firebase/Firest
 import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase/FirestoreMonthlySummaryRepository";
 import { buildInsightMessages, computeMonthComparison } from "../../application/use-cases/computeInsights";
 import { computeFuelReport, type FuelEntry } from "../../application/use-cases/computeFuelReport";
-import { buildMonthlyStatementPdf } from "../../infrastructure/pdf/buildMonthlyStatementPdf";
 import { currentMonth, formatMoney, formatMonthLabel, moneyTooltip } from "../format";
 import { Icon } from "../icons/Icon";
 import "./pages.css";
@@ -98,7 +97,7 @@ export function ReportsPage() {
 
   const topCategories = pieData.slice(0, 6);
 
-  function handleExportPdf() {
+  async function handleExportPdf() {
     const summary = summaries.find((s) => s.month === pdfMonth);
     if (!summary) return;
 
@@ -114,6 +113,7 @@ export function ReportsPage() {
       ? `${formatMonthLabel(pdfMonth)} (al día de hoy)`
       : formatMonthLabel(pdfMonth);
 
+    const { buildMonthlyStatementPdf } = await import("../../infrastructure/pdf/buildMonthlyStatementPdf");
     const doc = buildMonthlyStatementPdf({
       monthLabel: label,
       totalAmount: summary.totalAmount,

@@ -7,6 +7,7 @@ import { FirestoreCategoryRepository } from "../../infrastructure/firebase/Fires
 import { FirestoreRecurringTemplateRepository } from "../../infrastructure/firebase/FirestoreRecurringTemplateRepository";
 import { archiveRecurringTemplate, createRecurringTemplate } from "../../application/use-cases/manageRecurring";
 import { Icon, type IconName } from "../icons/Icon";
+import { IconSelect, type IconSelectOption } from "../components/IconSelect";
 import { formatMoney } from "../format";
 import "./pages.css";
 
@@ -38,6 +39,19 @@ export function RecurringPage() {
   const accountById = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const active = useMemo(() => templates.filter((t) => t.active), [templates]);
+
+  const accountOptions: IconSelectOption[] = activeAccounts.map((a) => ({
+    value: a.id,
+    label: a.name,
+    icon: a.type === "card" ? "card" : "cash",
+    color: a.color,
+  }));
+  const categoryOptions: IconSelectOption[] = activeCategories.map((c) => ({
+    value: c.id,
+    label: c.name,
+    icon: c.icon as IconName,
+    color: c.color,
+  }));
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -90,29 +104,16 @@ export function RecurringPage() {
           </label>
           <label className="field">
             Cuenta
-            <select value={accountId} onChange={(e) => setAccountId(e.target.value)} required>
-              <option value="" disabled>
-                Elige una cuenta
-              </option>
-              {activeAccounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            <IconSelect value={accountId} onChange={setAccountId} options={accountOptions} placeholder="Elige una cuenta" />
           </label>
           <label className="field">
             Categoría
-            <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
-              <option value="" disabled>
-                Elige una categoría
-              </option>
-              {activeCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <IconSelect
+              value={categoryId}
+              onChange={setCategoryId}
+              options={categoryOptions}
+              placeholder="Elige una categoría"
+            />
           </label>
           <label className="field">
             Día del mes

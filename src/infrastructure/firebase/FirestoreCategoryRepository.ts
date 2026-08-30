@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   onSnapshot,
@@ -11,7 +12,7 @@ import {
   Timestamp,
   writeBatch,
 } from "firebase/firestore";
-import type { CategoryRepository } from "../../domain/repositories/CategoryRepository";
+import type { CategoryRepository, SeedCategory } from "../../domain/repositories/CategoryRepository";
 import type { Category, NewCategory } from "../../domain/entities/Category";
 import { db, OWNER_UID } from "./firebaseClient";
 
@@ -62,14 +63,27 @@ export class FirestoreCategoryRepository implements CategoryRepository {
     await updateDoc(doc(categoriesCollection(), id), { active });
   }
 
-  async ensureDefaults(defaults: NewCategory[]): Promise<void> {
+  async remove(id: string): Promise<void> {
+    await deleteDoc(doc(categoriesCollection(), id));
+  }
+
+  /**
+   * Usa IDs determinísticos ("default-<seedId>") en vez de revisar si la
+   * colección está vacía: así, si esto se llama dos veces en paralelo (p. ej.
+   * por StrictMode en desarrollo), ambas llamadas escriben los MISMOS
+   * documentos en vez de crear duplicados.
+   */
+  async ensureDefaults(defaults: SeedCategory[]): Promise<void> {
     const existing = await getDocs(categoriesCollection());
-    if (!existing.empty) return;
+    const existingIds = new Set(existing.docs.map((d) => d.id));
+    const missing = defaults.filter((d) => !existingIds.has(`default-${d.seedId}`));
+    if (missing.length === 0) return;
 
     const batch = writeBatch(db);
-    for (const category of defaults) {
-      const ref = doc(categoriesCollection());
-      batch.set(ref, { ...category, createdAt: serverTimestamp() });
+    for (const category of missing) {
+      const { seedId, ...data } = category;
+      const ref = doc(categoriesCollection(), `default-${seedId}`);
+      batch.set(ref, { ...data, createdAt: serverTimestamp() });
     }
     await batch.commit();
   }

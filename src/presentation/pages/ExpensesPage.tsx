@@ -8,6 +8,7 @@ import { FirestoreExpenseRepository } from "../../infrastructure/firebase/Firest
 import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase/FirestoreMonthlySummaryRepository";
 import { deleteExpense, registerExpense, updateExpense } from "../../application/use-cases/manageExpenses";
 import { Icon, type IconName } from "../icons/Icon";
+import { IconSelect, type IconSelectOption } from "../components/IconSelect";
 import { currentMonth, formatMoney } from "../format";
 import "./pages.css";
 import "./ExpensesPage.css";
@@ -52,6 +53,19 @@ export function ExpensesPage() {
 
   const selectedCategory = categoryById.get(form.categoryId);
   const isFuel = selectedCategory?.fieldsTemplate === "fuel";
+
+  const accountOptions: IconSelectOption[] = activeAccounts.map((a) => ({
+    value: a.id,
+    label: a.name,
+    icon: a.type === "card" ? "card" : "cash",
+    color: a.color,
+  }));
+  const categoryOptions: IconSelectOption[] = activeCategories.map((c) => ({
+    value: c.id,
+    label: c.name,
+    icon: c.icon as IconName,
+    color: c.color,
+  }));
 
   const monthTotal = useMemo(() => expenses.reduce((sum, e) => sum + e.amount, 0), [expenses]);
 
@@ -159,37 +173,21 @@ export function ExpensesPage() {
             </label>
             <label className="field">
               Cuenta
-              <select
+              <IconSelect
                 value={form.accountId}
-                onChange={(e) => setForm({ ...form, accountId: e.target.value })}
-                required
-              >
-                <option value="" disabled>
-                  Elige una cuenta
-                </option>
-                {activeAccounts.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setForm({ ...form, accountId: v })}
+                options={accountOptions}
+                placeholder="Elige una cuenta"
+              />
             </label>
             <label className="field">
               Categoría
-              <select
+              <IconSelect
                 value={form.categoryId}
-                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                required
-              >
-                <option value="" disabled>
-                  Elige una categoría
-                </option>
-                {activeCategories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setForm({ ...form, categoryId: v })}
+                options={categoryOptions}
+                placeholder="Elige una categoría"
+              />
             </label>
             <label className="field" style={{ flex: 1 }}>
               Nota

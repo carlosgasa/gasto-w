@@ -10,6 +10,8 @@ export async function createRecurringTemplate(
   const name = input.name.trim();
   if (!name) throw new Error("El nombre del gasto recurrente no puede estar vacío.");
   if (!(input.amount > 0)) throw new Error("El monto debe ser mayor a cero.");
+  if (!input.accountId) throw new Error("Selecciona una cuenta.");
+  if (!input.categoryId) throw new Error("Selecciona una categoría.");
 
   return repo.create({ ...input, name, active: true });
 }

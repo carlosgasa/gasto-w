@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <defs>
+    <radialGradient id="bgGrad" cx="35%" cy="28%" r="80%">
+      <stop offset="0%" stop-color="#B33BF2"/>
+      <stop offset="55%" stop-color="#9B24DE"/>
+      <stop offset="100%" stop-color="#5B1594"/>
+    </radialGradient>
+    <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEBAE"/>
+      <stop offset="55%" stop-color="#F6C74B"/>
+      <stop offset="100%" stop-color="#D69A1F"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="240" height="240" fill="url(#bgGrad)"/>
+
+  <g transform="translate(120 120) scale(0.72) translate(-120 -120)">
+    <g stroke="#8A5A12" stroke-width="3.5">
+      <circle cx="152" cy="96" r="22" fill="url(#coinGrad)"/>
+      <circle cx="152" cy="96" r="13.5" fill="none" stroke-width="1.5" opacity="0.55"/>
+
+      <circle cx="173" cy="71" r="20" fill="url(#coinGrad)"/>
+      <circle cx="173" cy="71" r="12.5" fill="none" stroke-width="1.5" opacity="0.55"/>
+
+      <circle cx="187" cy="46" r="18" fill="url(#coinGrad)"/>
+      <circle cx="187" cy="46" r="11" fill="none" stroke-width="1.5" opacity="0.55"/>
+    </g>
+
+    <g transform="rotate(-9 122 152)">
+      <rect x="48" y="115" width="150" height="102" rx="20" fill="#F7E1F1" stroke="#3B1D5E" stroke-width="5.5"/>
+      <path d="M48 149 H198" stroke="#3B1D5E" stroke-width="3" opacity="0.3"/>
+      <circle cx="169" cy="174" r="14" fill="url(#coinGrad)" stroke="#8A5A12" stroke-width="2.5"/>
+      <text x="98" y="205" text-anchor="middle" font-family="'Arial Rounded MT Bold','Segoe UI','Arial Black',Arial,sans-serif" font-weight="900" font-size="88" fill="#3B1D5E">$</text>
+    </g>
+  </g>
+</svg>

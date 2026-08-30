@@ -173,3 +173,32 @@
   gap: 0.4rem;
   color: var(--text-muted);
 }
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.color-swatch-picker {
+  display: flex;
+  gap: 0.4rem;
+  padding-top: 0.3rem;
+}
+
+.color-swatch-option {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.color-swatch-option.is-selected {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--surface);
+}
