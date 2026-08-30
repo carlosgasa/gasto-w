@@ -86,7 +86,7 @@ Porcentaje de avance por fase (ver detalle de cada fase en el plan). Actualizar 
 | 8 | Configuración avanzada y PWA polish (temas, zoom, manifest, service worker) | 90% | 3 temas, zoom, manifest + service worker (vite-plugin-pwa) con íconos generados del logo; falta probar instalación real en un dispositivo |
 | 9 | Despliegue a Firebase Hosting | 100% | Desplegado: reglas de Firestore + hosting en https://gasto-w.web.app (CLI ya autenticado como el dueño) |
 
-**Avance global estimado: 100%**
+**Avance global estimado: ~97%** (falta pulir: heatmap de calendario y barras apiladas por categoría en Reportes, y probar instalación de la PWA en un dispositivo real)
 
 ## Estado actual
 
