@@ -43,3 +43,21 @@
   min-width: 3.2rem;
   text-align: right;
 }
+
+.backup-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.backup-upload {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.backup-status-ok {
+  color: var(--positive);
+  font-size: 0.85rem;
+  margin: 0.9rem 0 0;
+}

@@ -82,6 +82,11 @@ export class FirestoreExpenseRepository implements ExpenseRepository {
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
+  async listAll(): Promise<Expense[]> {
+    const snapshot = await getDocs(expensesCollection());
+    return snapshot.docs.map((d) => toExpense(d.id, d.data())).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   async create(expense: NewExpense): Promise<string> {
     const ref = await addDoc(expensesCollection(), {
       ...expense,

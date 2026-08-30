@@ -16,30 +16,39 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import type { Account } from "../../domain/entities/Account";
 import type { Category } from "../../domain/entities/Category";
 import type { MonthlySummary } from "../../domain/entities/MonthlySummary";
+import { FirestoreAccountRepository } from "../../infrastructure/firebase/FirestoreAccountRepository";
 import { FirestoreCategoryRepository } from "../../infrastructure/firebase/FirestoreCategoryRepository";
 import { FirestoreExpenseRepository } from "../../infrastructure/firebase/FirestoreExpenseRepository";
 import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase/FirestoreMonthlySummaryRepository";
 import { buildInsightMessages, computeMonthComparison } from "../../application/use-cases/computeInsights";
 import { computeFuelReport, type FuelEntry } from "../../application/use-cases/computeFuelReport";
+import { buildMonthlyStatementPdf } from "../../infrastructure/pdf/buildMonthlyStatementPdf";
 import { currentMonth, formatMoney, formatMonthLabel, moneyTooltip } from "../format";
+import { Icon } from "../icons/Icon";
 import "./pages.css";
 import "./ReportsPage.css";
 
+const accountRepo = new FirestoreAccountRepository();
 const categoryRepo = new FirestoreCategoryRepository();
 const summaryRepo = new FirestoreMonthlySummaryRepository();
 const expenseRepo = new FirestoreExpenseRepository();
 
 export function ReportsPage() {
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [summaries, setSummaries] = useState<MonthlySummary[]>([]);
   const [fuelEntries, setFuelEntries] = useState<FuelEntry[]>([]);
+  const [pdfMonth, setPdfMonth] = useState(currentMonth());
 
+  useEffect(() => accountRepo.subscribe(setAccounts), []);
   useEffect(() => categoryRepo.subscribe(setCategories), []);
   useEffect(() => summaryRepo.subscribeAll(setSummaries), []);
 
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+  const accountById = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const fuelCategory = useMemo(() => categories.find((c) => c.fieldsTemplate === "fuel"), [categories]);
 
   useEffect(() => {
@@ -89,11 +98,53 @@ export function ReportsPage() {
 
   const topCategories = pieData.slice(0, 6);
 
+  function handleExportPdf() {
+    const summary = summaries.find((s) => s.month === pdfMonth);
+    if (!summary) return;
+
+    const byCategory = Object.entries(summary.byCategory)
+      .map(([id, amount]) => ({ name: categoryById.get(id)?.name ?? "Otros", amount }))
+      .sort((a, b) => b.amount - a.amount);
+    const byAccount = Object.entries(summary.byAccount)
+      .map(([id, amount]) => ({ name: accountById.get(id)?.name ?? "?", amount }))
+      .sort((a, b) => b.amount - a.amount);
+
+    const isCurrent = pdfMonth === currentMonth();
+    const label = isCurrent
+      ? `${formatMonthLabel(pdfMonth)} (al día de hoy)`
+      : formatMonthLabel(pdfMonth);
+
+    const doc = buildMonthlyStatementPdf({
+      monthLabel: label,
+      totalAmount: summary.totalAmount,
+      expenseCount: summary.expenseCount,
+      byCategory,
+      byAccount,
+    });
+    doc.save(`cuentas-${pdfMonth}.pdf`);
+  }
+
+  const pdfSummaryAvailable = summaries.some((s) => s.month === pdfMonth);
+
   return (
     <div>
-      <div className="page-header">
-        <h1>Reportes</h1>
-        <p>Comparativas, tendencias y proyecciones a partir de tu histórico de gastos.</p>
+      <div className="page-header reports-header">
+        <div>
+          <h1>Reportes</h1>
+          <p>Comparativas, tendencias y proyecciones a partir de tu histórico de gastos.</p>
+        </div>
+        <div className="pdf-export">
+          <input
+            type="month"
+            value={pdfMonth}
+            max={currentMonth()}
+            onChange={(e) => setPdfMonth(e.target.value)}
+          />
+          <button className="btn-primary" onClick={handleExportPdf} disabled={!pdfSummaryAvailable}>
+            <Icon name="reports" size={16} />
+            Exportar PDF
+          </button>
+        </div>
       </div>
 
       <div className="card">
