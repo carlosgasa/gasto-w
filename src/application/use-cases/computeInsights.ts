@@ -132,5 +132,38 @@ export function buildInsightMessages(
     });
   }
 
+  const topGrowth = findTopGrowingCategory(summaries, month);
+  if (topGrowth && topGrowth.deltaAmount > 0) {
+    const name = categoryName.get(topGrowth.categoryId) ?? "una categoría";
+    messages.push({
+      tone: "warning",
+      message: `La categoría que más creció este mes fue ${name} (+$${topGrowth.deltaAmount.toFixed(0)}).`,
+    });
+  }
+
   return messages;
+}
+
+export interface TopGrowth {
+  categoryId: string;
+  deltaAmount: number;
+}
+
+/** Categoría con el mayor incremento absoluto en monto vs. el mes anterior. */
+export function findTopGrowingCategory(summaries: MonthlySummary[], month: string): TopGrowth | null {
+  const byMonth = new Map(summaries.map((s) => [s.month, s]));
+  const current = byMonth.get(month);
+  const [year, monthNum] = month.split("-").map(Number);
+  const prevDate = new Date(year, monthNum - 2, 1);
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
+  const previous = byMonth.get(prevMonth);
+  if (!current) return null;
+
+  let best: TopGrowth | null = null;
+  const categoryIds = new Set([...Object.keys(current.byCategory), ...Object.keys(previous?.byCategory ?? {})]);
+  for (const categoryId of categoryIds) {
+    const delta = (current.byCategory[categoryId] ?? 0) - (previous?.byCategory[categoryId] ?? 0);
+    if (!best || delta > best.deltaAmount) best = { categoryId, deltaAmount: delta };
+  }
+  return best;
 }

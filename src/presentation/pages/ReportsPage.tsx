@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import type { Account } from "../../domain/entities/Account";
 import type { Category } from "../../domain/entities/Category";
+import type { Expense } from "../../domain/entities/Expense";
 import type { MonthlySummary } from "../../domain/entities/MonthlySummary";
 import { FirestoreAccountRepository } from "../../infrastructure/firebase/FirestoreAccountRepository";
 import { FirestoreCategoryRepository } from "../../infrastructure/firebase/FirestoreCategoryRepository";
@@ -27,8 +28,12 @@ import { buildInsightMessages, computeMonthComparison } from "../../application/
 import { computeFuelReport, type FuelEntry } from "../../application/use-cases/computeFuelReport";
 import { currentMonth, formatMoney, formatMonthLabel, moneyTooltip } from "../format";
 import { Icon } from "../icons/Icon";
+import { CalendarHeatmap } from "../components/CalendarHeatmap";
 import "./pages.css";
 import "./ReportsPage.css";
+
+const STACK_COLORS = ["#9B24DE", "#3F8CE0", "#D69A1F", "#3FAE6B", "#D14F8C", "#5B6EE0"];
+const OTHER_COLOR = "#8A7A99";
 
 const accountRepo = new FirestoreAccountRepository();
 const categoryRepo = new FirestoreCategoryRepository();
@@ -41,10 +46,12 @@ export function ReportsPage() {
   const [summaries, setSummaries] = useState<MonthlySummary[]>([]);
   const [fuelEntries, setFuelEntries] = useState<FuelEntry[]>([]);
   const [pdfMonth, setPdfMonth] = useState(currentMonth());
+  const [monthExpenses, setMonthExpenses] = useState<Expense[]>([]);
 
   useEffect(() => accountRepo.subscribe(setAccounts), []);
   useEffect(() => categoryRepo.subscribe(setCategories), []);
   useEffect(() => summaryRepo.subscribeAll(setSummaries), []);
+  useEffect(() => expenseRepo.subscribeByMonth(currentMonth(), setMonthExpenses), []);
 
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const accountById = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
@@ -96,6 +103,54 @@ export function ReportsPage() {
   );
 
   const topCategories = pieData.slice(0, 6);
+
+  const dailyTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    for (const expense of monthExpenses) {
+      totals[expense.date] = (totals[expense.date] ?? 0) + expense.amount;
+    }
+    return totals;
+  }, [monthExpenses]);
+
+  const stackedCategoryIds = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const s of summaries.slice(-6)) {
+      for (const [categoryId, amount] of Object.entries(s.byCategory)) {
+        totals.set(categoryId, (totals.get(categoryId) ?? 0) + amount);
+      }
+    }
+    return [...totals.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([id]) => id);
+  }, [summaries]);
+
+  const stackedSeries = useMemo(
+    () =>
+      stackedCategoryIds.map((id, i) => ({
+        id,
+        name: categoryById.get(id)?.name ?? "Otros",
+        color: STACK_COLORS[i % STACK_COLORS.length],
+      })),
+    [stackedCategoryIds, categoryById],
+  );
+
+  const stackedData = useMemo(() => {
+    return summaries.slice(-6).map((s) => {
+      const row: Record<string, string | number> = { month: formatMonthLabel(s.month).slice(0, 3) };
+      let otros = 0;
+      for (const [categoryId, amount] of Object.entries(s.byCategory)) {
+        const series = stackedSeries.find((entry) => entry.id === categoryId);
+        if (series) {
+          row[series.name] = (Number(row[series.name]) || 0) + amount;
+        } else {
+          otros += amount;
+        }
+      }
+      if (otros > 0) row["Otros"] = otros;
+      return row;
+    });
+  }, [summaries, stackedSeries]);
 
   async function handleExportPdf() {
     const summary = summaries.find((s) => s.month === pdfMonth);
@@ -211,6 +266,34 @@ export function ReportsPage() {
             </LineChart>
           </ResponsiveContainer>
         )}
+      </div>
+
+      <div className="reports-grid">
+        <div className="card">
+          <h2>Composición por categoría (últimos 6 meses)</h2>
+          {stackedData.length === 0 ? (
+            <p className="empty-hint">Todavía no hay histórico suficiente.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={stackedData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
+                <YAxis stroke="var(--text-muted)" fontSize={12} />
+                <Tooltip formatter={moneyTooltip} />
+                <Legend />
+                {stackedSeries.map((series) => (
+                  <Bar key={series.id} dataKey={series.name} stackId="cat" fill={series.color} />
+                ))}
+                <Bar dataKey="Otros" stackId="cat" fill={OTHER_COLOR} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>Gasto diario — {formatMonthLabel(month)}</h2>
+          <CalendarHeatmap month={month} dailyTotals={dailyTotals} />
+        </div>
       </div>
 
       <div className="card">

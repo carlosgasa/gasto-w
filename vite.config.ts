@@ -13,6 +13,7 @@ export default defineConfig({
         name: 'Cuentas',
         short_name: 'Cuentas',
         description: 'Control personal de gastos por tarjeta, efectivo y categoría.',
+        lang: 'es',
         theme_color: '#9B24DE',
         background_color: '#150E1B',
         display: 'standalone',
