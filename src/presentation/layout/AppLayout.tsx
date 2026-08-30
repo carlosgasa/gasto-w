@@ -1,8 +1,18 @@
+import { useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Icon, type IconName } from "../icons/Icon";
 import { BrandMark } from "../components/BrandMark";
 import { signOutUser } from "../../infrastructure/firebase/authService";
+import { FirestoreExpenseRepository } from "../../infrastructure/firebase/FirestoreExpenseRepository";
+import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase/FirestoreMonthlySummaryRepository";
+import { FirestoreRecurringTemplateRepository } from "../../infrastructure/firebase/FirestoreRecurringTemplateRepository";
+import { generateRecurringExpensesForMonth } from "../../application/use-cases/manageRecurring";
+import { currentMonth } from "../format";
 import "./AppLayout.css";
+
+const expenseRepo = new FirestoreExpenseRepository();
+const summaryRepo = new FirestoreMonthlySummaryRepository();
+const templateRepo = new FirestoreRecurringTemplateRepository();
 
 const NAV_ITEMS: { to: string; label: string; icon: IconName }[] = [
   { to: "/", label: "Resumen", icon: "dashboard" },
@@ -15,6 +25,17 @@ const NAV_ITEMS: { to: string; label: string; icon: IconName }[] = [
 ];
 
 export function AppLayout() {
+  useEffect(() => {
+    const month = currentMonth();
+    Promise.all([templateRepo.list(), expenseRepo.listByMonth(month)])
+      .then(([templates, expenses]) =>
+        generateRecurringExpensesForMonth({ expenseRepo, summaryRepo }, templates, month, expenses),
+      )
+      .catch(() => {
+        // silencioso: si falla, el usuario igual puede registrar el gasto a mano
+      });
+  }, []);
+
   return (
     <div className="app-shell">
       <aside className="app-sidebar">

@@ -76,17 +76,17 @@ Porcentaje de avance por fase (ver detalle de cada fase en el plan). Actualizar 
 | # | Fase | Avance | Notas |
 |---|------|--------|-------|
 | 1 | Base del proyecto (scaffold, Firebase, capas, íconos SVG, tokens de tema) | 100% | React+Vite+TS, Firebase Auth/Firestore conectados, layout con nav, 3 temas, set de íconos SVG |
-| 2 | MVP (auth, cuentas, categorías, gastos puntuales, dashboard básico) | 55% | Login + cuentas + categorías (CRUD real contra Firestore) listos; falta alta de gastos puntuales y dashboard con totales reales |
-| 3 | Recurrentes | 0% | No iniciado |
-| 4 | Comparativas e histórico (`monthlySummaries`) | 0% | No iniciado |
-| 5 | Insights/predicción | 0% | No iniciado |
-| 6 | Campos extendidos y reporte de combustible | 10% | Entidad `Category.fieldsTemplate: 'fuel'` y toggle en alta de categoría ya existen; falta el formulario de gasto y el reporte |
-| 7 | Respaldo y PDF (export/import JSON, estado de cuenta en PDF) | 0% | No iniciado |
-| 8 | Configuración avanzada y PWA polish (temas, zoom, manifest, service worker) | 35% | Selector de tema y control de zoom funcionando; falta manifest.json/service worker (vite-plugin-pwa ya instalado, sin configurar) |
+| 2 | MVP (auth, cuentas, categorías, gastos puntuales, dashboard básico) | 100% | Login, cuentas, categorías, gastos puntuales (con `monthlySummaries` recalculado por transacción) y dashboard con totales/gráfica reales |
+| 3 | Recurrentes | 100% | Alta/pausa de plantillas + generación automática idempotente de instancias del mes al abrir la app |
+| 4 | Comparativas e histórico (`monthlySummaries`) | 90% | Comparativa mes vs. anterior, tendencia 12 meses y ranking listos; falta heatmap de calendario y barras apiladas por categoría en el tiempo |
+| 5 | Insights/predicción | 90% | Rachas de 3+ meses por categoría, comparación % vs. mes anterior y proyección por ritmo de gasto, como feed de avisos |
+| 6 | Campos extendidos y reporte de combustible | 100% | Alta de gasto de Gasolina pide kilometraje/litros; reporte de precio/litro, rendimiento km/l y gasto acumulado |
+| 7 | Respaldo y PDF (export/import JSON, estado de cuenta en PDF) | 0% | Siguiente paso |
+| 8 | Configuración avanzada y PWA polish (temas, zoom, manifest, service worker) | 35% | Selector de tema y control de zoom funcionando; falta manifest.json/service worker |
 | 9 | Despliegue a Firebase Hosting | 0% | Pendiente de que el usuario lo pida explícitamente |
 
-**Avance global estimado: ~22%**
+**Avance global estimado: ~68%**
 
 ## Estado actual
 
-App de React + Vite + TS corriendo en `localhost:5173`, conectada al proyecto Firebase `gasto-w` (Auth + Firestore con persistencia offline). Login con email/password funcional, layout con navegación por íconos SVG, y las páginas de **Cuentas** y **Categorías** con alta/listado real contra Firestore (categorías con seed de default). Configuración con selector de 3 temas y control de zoom, ambos persistentes. Reglas de Firestore (`firebase/firestore.rules`) restringidas al UID del dueño. Pendiente inmediato: alta de gastos puntuales y dashboard con totales reales.
+App de React + Vite + TS corriendo en `localhost:5173`, conectada al proyecto Firebase `gasto-w` (Auth + Firestore con persistencia offline). Flujo completo funcionando: login, alta de cuentas/categorías, captura de gastos puntuales (con campos extra de combustible), gastos recurrentes que se autogeneran cada mes, dashboard con totales y gráfica por categoría/cuenta, y una página de Reportes con comparativas, tendencia de 12 meses, ranking de categorías, feed de avisos (rachas y proyección) y reporte de combustible. Reglas de Firestore (`firebase/firestore.rules`) restringidas al UID del dueño. Pendiente: respaldo/restauración en JSON, exportar estado de cuenta a PDF, manifest/service worker de la PWA, y despliegue.
