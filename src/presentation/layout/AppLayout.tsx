@@ -9,6 +9,7 @@ import { FirestoreRecurringTemplateRepository } from "../../infrastructure/fireb
 import { FirestoreCategoryRepository } from "../../infrastructure/firebase/FirestoreCategoryRepository";
 import { generateRecurringExpensesForMonth } from "../../application/use-cases/manageRecurring";
 import { removeDuplicateCategories } from "../../application/use-cases/manageCategories";
+import { recomputeAllMonthlySummaries } from "../../application/use-cases/recomputeSummaries";
 import { currentMonth } from "../format";
 import "./AppLayout.css";
 
@@ -49,6 +50,12 @@ export function AppLayout() {
       .catch(() => {
         // silencioso: si falla, el botón "Quitar duplicados" en Categorías sigue disponible
       });
+
+    // Repara monthlySummaries reconstruyéndolo desde los gastos reales: corrige
+    // el bug donde byCategory/byAccount no se actualizaban aunque el total sí.
+    recomputeAllMonthlySummaries(expenseRepo, summaryRepo).catch(() => {
+      // silencioso: los gastos siguen intactos aunque esto falle una vez
+    });
   }, []);
 
   useEffect(() => {

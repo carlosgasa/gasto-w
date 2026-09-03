@@ -6,6 +6,7 @@ import {
   createCategory,
   ensureDefaultCategories,
   removeDuplicateCategories,
+  updateCategory,
 } from "../../application/use-cases/manageCategories";
 import { Icon, type IconName } from "../icons/Icon";
 import { IconSelect, type IconSelectOption } from "../components/IconSelect";
@@ -15,25 +16,51 @@ const repo = new FirestoreCategoryRepository();
 
 const ICON_CHOICES: { icon: IconName; label: string }[] = [
   { icon: "food", label: "Comida" },
+  { icon: "delivery", label: "Comida a domicilio" },
   { icon: "transport", label: "Transporte" },
   { icon: "fuel", label: "Combustible" },
   { icon: "entertainment", label: "Entretenimiento" },
   { icon: "health", label: "Salud" },
   { icon: "services", label: "Servicios" },
   { icon: "home", label: "Hogar" },
+  { icon: "furniture", label: "Muebles" },
+  { icon: "construction", label: "Construcción" },
   { icon: "clothing", label: "Ropa" },
   { icon: "education", label: "Educación" },
+  { icon: "school", label: "Escuela" },
+  { icon: "business", label: "Negocios" },
+  { icon: "loans", label: "Préstamos" },
+  { icon: "travel", label: "Viajes" },
+  { icon: "pets", label: "Mascotas" },
+  { icon: "gifts", label: "Regalos" },
   { icon: "other", label: "Otros" },
 ];
 
-const COLOR_CHOICES = ["#E0663F", "#3F8CE0", "#D69A1F", "#9B24DE", "#3FAE6B", "#5B6EE0", "#D14F8C", "#8A7A99"];
+const COLOR_CHOICES = [
+  "#E0663F",
+  "#D14F8C",
+  "#D69A1F",
+  "#C9863F",
+  "#3FAE6B",
+  "#3FA5B0",
+  "#3F8CE0",
+  "#5B6EE0",
+  "#9B24DE",
+  "#B33BF2",
+  "#7A5AF8",
+  "#5B1594",
+  "#B0473F",
+  "#7A4B2E",
+  "#4A7A3F",
+  "#8A7A99",
+];
+
+const emptyForm = { name: "", icon: "other" as IconName, color: COLOR_CHOICES[0], isFuel: false };
 
 export function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [name, setName] = useState("");
-  const [icon, setIcon] = useState<IconName>("other");
-  const [color, setColor] = useState(COLOR_CHOICES[0]);
-  const [isFuel, setIsFuel] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [cleaning, setCleaning] = useState(false);
 
@@ -57,17 +84,41 @@ export function CategoriesPage() {
     value: c.icon,
     label: c.label,
     icon: c.icon,
-    color,
+    color: form.color,
   }));
+
+  function resetForm() {
+    setForm(emptyForm);
+    setEditingId(null);
+  }
+
+  function loadForEdit(category: Category) {
+    setEditingId(category.id);
+    setForm({
+      name: category.name,
+      icon: category.icon as IconName,
+      color: category.color,
+      isFuel: category.fieldsTemplate === "fuel",
+    });
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!name.trim()) return;
+    if (!form.name.trim()) return;
     setSaving(true);
     try {
-      await createCategory(repo, { name, icon, color, fieldsTemplate: isFuel ? "fuel" : null });
-      setName("");
-      setIsFuel(false);
+      const payload = {
+        name: form.name,
+        icon: form.icon,
+        color: form.color,
+        fieldsTemplate: form.isFuel ? ("fuel" as const) : null,
+      };
+      if (editingId) {
+        await updateCategory(repo, editingId, payload);
+      } else {
+        await createCategory(repo, payload);
+      }
+      resetForm();
     } finally {
       setSaving(false);
     }
@@ -86,19 +137,24 @@ export function CategoriesPage() {
     <div>
       <div className="page-header">
         <h1>Categorías</h1>
-        <p>Se cargó un set inicial. Puedes agregar las tuyas o archivar las que no uses.</p>
+        <p>Se cargó un set inicial. Puedes agregar las tuyas, editarlas o archivar las que no uses.</p>
       </div>
 
       <div className="card">
-        <h2>Nueva categoría</h2>
+        <h2>{editingId ? "Editar categoría" : "Nueva categoría"}</h2>
         <form className="inline-form" onSubmit={handleSubmit}>
           <label className="field">
             Nombre
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ej. Mascotas" required />
+            <input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="ej. Mascotas"
+              required
+            />
           </label>
           <label className="field">
             Ícono
-            <IconSelect value={icon} onChange={(v) => setIcon(v as IconName)} options={iconOptions} />
+            <IconSelect value={form.icon} onChange={(v) => setForm({ ...form, icon: v as IconName })} options={iconOptions} />
           </label>
           <label className="field">
             Color
@@ -107,22 +163,34 @@ export function CategoriesPage() {
                 <button
                   type="button"
                   key={choice}
-                  className={`color-swatch-option${choice === color ? " is-selected" : ""}`}
+                  className={`color-swatch-option${choice === form.color ? " is-selected" : ""}`}
                   style={{ background: choice }}
                   aria-label={choice}
-                  onClick={() => setColor(choice)}
+                  onClick={() => setForm({ ...form, color: choice })}
                 />
               ))}
             </div>
           </label>
           <label className="field" style={{ flexDirection: "row", alignItems: "center", gap: "0.4rem" }}>
-            <input type="checkbox" checked={isFuel} onChange={(e) => setIsFuel(e.target.checked)} style={{ minWidth: 0 }} />
+            <input
+              type="checkbox"
+              checked={form.isFuel}
+              onChange={(e) => setForm({ ...form, isFuel: e.target.checked })}
+              style={{ minWidth: 0 }}
+            />
             Pedir kilometraje y litros (combustible)
           </label>
-          <button className="btn-primary" type="submit" disabled={saving}>
-            <Icon name="add" size={16} />
-            Agregar
-          </button>
+          <div className="expense-form-actions">
+            <button className="btn-primary" type="submit" disabled={saving}>
+              <Icon name="add" size={16} />
+              {editingId ? "Guardar cambios" : "Agregar"}
+            </button>
+            {editingId && (
+              <button type="button" className="btn-ghost" onClick={resetForm}>
+                Cancelar
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -146,6 +214,7 @@ export function CategoriesPage() {
                 </div>
                 <span className="entity-name">{category.name}</span>
                 {category.fieldsTemplate === "fuel" && <span className="entity-meta">combustible</span>}
+                <button onClick={() => loadForEdit(category)}>Editar</button>
                 {!category.isDefault && <button onClick={() => archiveCategory(repo, category.id)}>Archivar</button>}
               </div>
             ))}

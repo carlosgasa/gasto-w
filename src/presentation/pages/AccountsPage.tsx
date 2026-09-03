@@ -1,34 +1,64 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { Account, AccountType } from "../../domain/entities/Account";
 import { FirestoreAccountRepository } from "../../infrastructure/firebase/FirestoreAccountRepository";
-import { archiveAccount, createAccount } from "../../application/use-cases/manageAccounts";
+import { archiveAccount, createAccount, updateAccount } from "../../application/use-cases/manageAccounts";
 import { Icon } from "../icons/Icon";
 import "./pages.css";
 
 const repo = new FirestoreAccountRepository();
 
+const COLOR_CHOICES = [
+  "#9B24DE",
+  "#B33BF2",
+  "#5B1594",
+  "#3F8CE0",
+  "#5B6EE0",
+  "#3FAE6B",
+  "#3FA5B0",
+  "#D69A1F",
+  "#C9863F",
+  "#E0663F",
+  "#D14F8C",
+  "#7A5AF8",
+  "#B0473F",
+  "#4A7A3F",
+  "#8A7A99",
+];
+
+const emptyForm = { name: "", type: "card" as AccountType, color: COLOR_CHOICES[0] };
+
 export function AccountsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [name, setName] = useState("");
-  const [type, setType] = useState<AccountType>("card");
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => repo.subscribe(setAccounts), []);
 
   const active = useMemo(() => accounts.filter((a) => a.active), [accounts]);
 
+  function resetForm() {
+    setForm(emptyForm);
+    setEditingId(null);
+  }
+
+  function loadForEdit(account: Account) {
+    setEditingId(account.id);
+    setForm({ name: account.name, type: account.type, color: account.color });
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!name.trim()) return;
+    if (!form.name.trim()) return;
     setSaving(true);
     try {
-      await createAccount(repo, {
-        name,
-        type,
-        color: type === "card" ? "#9B24DE" : "#3FAE6B",
-        icon: type,
-      });
-      setName("");
+      const payload = { name: form.name, type: form.type, color: form.color, icon: form.type };
+      if (editingId) {
+        await updateAccount(repo, editingId, payload);
+      } else {
+        await createAccount(repo, payload);
+      }
+      resetForm();
     } finally {
       setSaving(false);
     }
@@ -42,28 +72,50 @@ export function AccountsPage() {
       </div>
 
       <div className="card">
-        <h2>Nueva cuenta</h2>
+        <h2>{editingId ? "Editar cuenta" : "Nueva cuenta"}</h2>
         <form className="inline-form" onSubmit={handleSubmit}>
           <label className="field">
             Nombre
             <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="ej. BBVA Oro"
               required
             />
           </label>
           <label className="field">
             Tipo
-            <select value={type} onChange={(e) => setType(e.target.value as AccountType)}>
+            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as AccountType })}>
               <option value="card">Tarjeta</option>
               <option value="cash">Efectivo</option>
             </select>
           </label>
-          <button className="btn-primary" type="submit" disabled={saving}>
-            <Icon name="add" size={16} />
-            Agregar
-          </button>
+          <label className="field">
+            Color
+            <div className="color-swatch-picker">
+              {COLOR_CHOICES.map((choice) => (
+                <button
+                  type="button"
+                  key={choice}
+                  className={`color-swatch-option${choice === form.color ? " is-selected" : ""}`}
+                  style={{ background: choice }}
+                  aria-label={choice}
+                  onClick={() => setForm({ ...form, color: choice })}
+                />
+              ))}
+            </div>
+          </label>
+          <div className="expense-form-actions">
+            <button className="btn-primary" type="submit" disabled={saving}>
+              <Icon name="add" size={16} />
+              {editingId ? "Guardar cambios" : "Agregar"}
+            </button>
+            {editingId && (
+              <button type="button" className="btn-ghost" onClick={resetForm}>
+                Cancelar
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -80,6 +132,7 @@ export function AccountsPage() {
                 </div>
                 <span className="entity-name">{account.name}</span>
                 <span className="entity-meta">{account.type === "card" ? "Tarjeta" : "Efectivo"}</span>
+                <button onClick={() => loadForEdit(account)}>Editar</button>
                 <button onClick={() => archiveAccount(repo, account.id)}>Archivar</button>
               </div>
             ))}

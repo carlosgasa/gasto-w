@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import type {
   MonthlySummaryDelta,
+  MonthlySummaryOverwrite,
   MonthlySummaryRepository,
 } from "../../domain/repositories/MonthlySummaryRepository";
 import type { MonthlySummary } from "../../domain/entities/MonthlySummary";
@@ -58,6 +59,12 @@ export class FirestoreMonthlySummaryRepository implements MonthlySummaryReposito
    * las transacciones de Firestore requieren conexión, mientras que esto se
    * encola como escritura normal y funciona sin internet — se sincroniza solo
    * al volver la conexión, igual que cualquier otra escritura de la app.
+   *
+   * Los campos anidados (byCategory/byAccount) se mandan como objeto anidado,
+   * no como llave con punto ("byCategory.xyz"): con setDoc+merge, una llave
+   * con punto se guarda como nombre de campo LITERAL (con el punto incluido)
+   * en vez de anidarse — por eso los montos por categoría/cuenta no se veían
+   * aunque el total sí. El objeto anidado sí hace merge profundo real.
    */
   async applyDelta(month: string, delta: MonthlySummaryDelta): Promise<void> {
     const ref = doc(summariesCollection(), month);
@@ -66,12 +73,24 @@ export class FirestoreMonthlySummaryRepository implements MonthlySummaryReposito
       ref,
       {
         totalAmount: increment(delta.amount),
-        [`byCategory.${delta.categoryId}`]: increment(delta.amount),
-        [`byAccount.${delta.accountId}`]: increment(delta.amount),
+        byCategory: { [delta.categoryId]: increment(delta.amount) },
+        byAccount: { [delta.accountId]: increment(delta.amount) },
         expenseCount: increment(delta.countDelta),
         computedAt: serverTimestamp(),
       },
       { merge: true },
     );
+  }
+
+  /** Reemplaza por completo el resumen de un mes (usado para reconstruir desde los gastos). */
+  async overwrite(month: string, summary: MonthlySummaryOverwrite): Promise<void> {
+    const ref = doc(summariesCollection(), month);
+    await setDoc(ref, {
+      totalAmount: summary.totalAmount,
+      byCategory: summary.byCategory,
+      byAccount: summary.byAccount,
+      expenseCount: summary.expenseCount,
+      computedAt: serverTimestamp(),
+    });
   }
 }

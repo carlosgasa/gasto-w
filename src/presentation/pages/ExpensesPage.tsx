@@ -9,7 +9,7 @@ import { FirestoreMonthlySummaryRepository } from "../../infrastructure/firebase
 import { deleteExpense, registerExpense, updateExpense } from "../../application/use-cases/manageExpenses";
 import { Icon, type IconName } from "../icons/Icon";
 import { IconSelect, type IconSelectOption } from "../components/IconSelect";
-import { currentMonth, formatMoney } from "../format";
+import { currentMonth, formatMoney, todayLocal } from "../format";
 import "./pages.css";
 import "./ExpensesPage.css";
 
@@ -19,11 +19,10 @@ const expenseRepo = new FirestoreExpenseRepository();
 const summaryRepo = new FirestoreMonthlySummaryRepository();
 const deps = { expenseRepo, summaryRepo };
 
-const today = () => new Date().toISOString().slice(0, 10);
 
 const emptyForm = {
   amount: "",
-  date: today(),
+  date: todayLocal(),
   accountId: "",
   categoryId: "",
   note: "",
@@ -70,7 +69,7 @@ export function ExpensesPage() {
   const monthTotal = useMemo(() => expenses.reduce((sum, e) => sum + e.amount, 0), [expenses]);
 
   function resetForm() {
-    setForm({ ...emptyForm, date: today() });
+    setForm({ ...emptyForm, date: todayLocal() });
     setEditingId(null);
   }
 
@@ -262,10 +261,9 @@ export function ExpensesPage() {
                     <Icon name={(category?.icon as IconName) ?? "other"} size={17} />
                   </div>
                   <div className="expense-info">
-                    <span className="entity-name">{category?.name ?? "Sin categoría"}</span>
+                    <span className="entity-name">{expense.note || category?.name || "Sin descripción"}</span>
                     <span className="entity-meta">
-                      {expense.date} · {account?.name ?? "?"}
-                      {expense.note ? ` · ${expense.note}` : ""}
+                      {category?.name ?? "Sin categoría"} · {expense.date} · {account?.name ?? "?"}
                       {expense.source === "recurring" ? " · recurrente" : ""}
                     </span>
                   </div>

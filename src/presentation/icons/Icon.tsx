@@ -24,7 +24,16 @@ export type IconName =
   | "education"
   | "other"
   | "card"
-  | "cash";
+  | "cash"
+  | "construction"
+  | "furniture"
+  | "delivery"
+  | "school"
+  | "business"
+  | "loans"
+  | "pets"
+  | "gifts"
+  | "travel";
 
 const paths: Record<IconName, ReactElement> = {
   dashboard: (
@@ -178,6 +187,69 @@ const paths: Record<IconName, ReactElement> = {
       <circle cx="12" cy="12" r="3" />
     </>
   ),
+  construction: (
+    <>
+      <path d="M4 16a8 8 0 0 1 16 0" />
+      <rect x="3" y="16" width="18" height="3" rx="1" />
+      <line x1="12" y1="8" x2="12" y2="4" />
+    </>
+  ),
+  furniture: (
+    <>
+      <path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
+      <rect x="4" y="11" width="16" height="6" rx="1.5" />
+      <line x1="5" y1="17" x2="5" y2="20" />
+      <line x1="19" y1="17" x2="19" y2="20" />
+    </>
+  ),
+  delivery: (
+    <>
+      <path d="M6 8h12l-1.2 12H7.2z" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+    </>
+  ),
+  school: (
+    <>
+      <path d="M4 21V10l8-5 8 5v11" />
+      <rect x="10.5" y="15" width="3" height="6" />
+      <rect x="6.3" y="12.2" width="2.4" height="2.4" />
+      <rect x="15.3" y="12.2" width="2.4" height="2.4" />
+      <line x1="4" y1="21" x2="20" y2="21" />
+    </>
+  ),
+  business: (
+    <>
+      <rect x="3" y="8" width="18" height="12" rx="2" />
+      <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="3" y1="13" x2="21" y2="13" />
+    </>
+  ),
+  loans: (
+    <>
+      <circle cx="7" cy="7" r="2.3" />
+      <circle cx="17" cy="17" r="2.3" />
+      <line x1="6" y1="18" x2="18" y2="6" />
+    </>
+  ),
+  pets: (
+    <>
+      <circle cx="12" cy="15.5" r="3.3" />
+      <circle cx="6" cy="9" r="1.7" />
+      <circle cx="10" cy="5.5" r="1.7" />
+      <circle cx="14" cy="5.5" r="1.7" />
+      <circle cx="18" cy="9" r="1.7" />
+    </>
+  ),
+  gifts: (
+    <>
+      <rect x="4" y="9" width="16" height="11" rx="1" />
+      <line x1="4" y1="13.5" x2="20" y2="13.5" />
+      <line x1="12" y1="9" x2="12" y2="20" />
+      <path d="M12 9c-3 0-4-2.6-2.7-3.8C10.5 4 12 6 12 9z" />
+      <path d="M12 9c3 0 4-2.6 2.7-3.8C13.5 4 12 6 12 9z" />
+    </>
+  ),
+  travel: <path d="M3 12 21 4l-6 17-4-7-7-3z" />,
 };
 
 interface IconProps extends SVGProps<SVGSVGElement> {

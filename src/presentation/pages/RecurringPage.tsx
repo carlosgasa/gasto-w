@@ -8,14 +8,12 @@ import { FirestoreRecurringTemplateRepository } from "../../infrastructure/fireb
 import { archiveRecurringTemplate, createRecurringTemplate } from "../../application/use-cases/manageRecurring";
 import { Icon, type IconName } from "../icons/Icon";
 import { IconSelect, type IconSelectOption } from "../components/IconSelect";
-import { formatMoney } from "../format";
+import { formatMoney, todayLocal } from "../format";
 import "./pages.css";
 
 const accountRepo = new FirestoreAccountRepository();
 const categoryRepo = new FirestoreCategoryRepository();
 const templateRepo = new FirestoreRecurringTemplateRepository();
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function RecurringPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -64,7 +62,7 @@ export function RecurringPage() {
         accountId,
         categoryId,
         dayOfMonth: Number(dayOfMonth),
-        startDate: today(),
+        startDate: todayLocal(),
         endDate: null,
       });
       setName("");

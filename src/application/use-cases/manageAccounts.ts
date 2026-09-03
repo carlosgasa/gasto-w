@@ -14,3 +14,14 @@ export async function createAccount(
 export async function archiveAccount(repo: AccountRepository, id: string): Promise<void> {
   await repo.setActive(id, false);
 }
+
+export async function updateAccount(
+  repo: AccountRepository,
+  id: string,
+  input: Pick<NewAccount, "name" | "type" | "color" | "icon">,
+): Promise<void> {
+  const name = input.name.trim();
+  if (!name) throw new Error("El nombre de la cuenta no puede estar vacío.");
+
+  await repo.update(id, { ...input, name });
+}

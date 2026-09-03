@@ -1,5 +1,12 @@
 export function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7);
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Fecha de hoy en la zona horaria local (yyyy-mm-dd) — evitar toISOString(), que usa UTC. */
+export function todayLocal(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
 const moneyFormatter = new Intl.NumberFormat("es-MX", {

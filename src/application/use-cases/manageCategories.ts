@@ -32,6 +32,17 @@ export async function archiveCategory(repo: CategoryRepository, id: string): Pro
   await repo.setActive(id, false);
 }
 
+export async function updateCategory(
+  repo: CategoryRepository,
+  id: string,
+  input: Pick<NewCategory, "name" | "color" | "icon" | "fieldsTemplate">,
+): Promise<void> {
+  const name = input.name.trim();
+  if (!name) throw new Error("El nombre de la categoría no puede estar vacío.");
+
+  await repo.update(id, { ...input, name });
+}
+
 /**
  * Archiva duplicados exactos (mismo nombre, sin distinguir mayúsculas) entre
  * las categorías ACTIVAS, dejando una sola visible por nombre. Archiva en vez
