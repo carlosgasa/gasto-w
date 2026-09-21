@@ -57,12 +57,14 @@ export function ReportsPage() {
   const accountById = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const fuelCategory = useMemo(() => categories.find((c) => c.fieldsTemplate === "fuel"), [categories]);
 
+  // Incluye categorías de combustible duplicadas/archivadas: sus gastos siguen existiendo.
   useEffect(() => {
-    if (!fuelCategory) return;
-    expenseRepo.listByCategory(fuelCategory.id).then((expenses) => {
-      setFuelEntries(computeFuelReport(expenses));
+    const ids = categories.filter((c) => c.fieldsTemplate === "fuel").map((c) => c.id);
+    if (ids.length === 0) return;
+    Promise.all(ids.map((id) => expenseRepo.listByCategory(id))).then((lists) => {
+      setFuelEntries(computeFuelReport(lists.flat()));
     });
-  }, [fuelCategory]);
+  }, [categories]);
 
   const month = currentMonth();
   const comparison = useMemo(() => computeMonthComparison(summaries, month), [summaries, month]);
