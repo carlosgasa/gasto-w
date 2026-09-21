@@ -33,6 +33,11 @@ const ICON_CHOICES: { icon: IconName; label: string }[] = [
   { icon: "travel", label: "Viajes" },
   { icon: "pets", label: "Mascotas" },
   { icon: "gifts", label: "Regalos" },
+  { icon: "tools", label: "Herramientas" },
+  { icon: "car", label: "Carro" },
+  { icon: "labor", label: "Mano de obra" },
+  { icon: "investment", label: "Inversión" },
+  { icon: "tech", label: "Tecnología" },
   { icon: "other", label: "Otros" },
 ];
 
@@ -53,6 +58,17 @@ const COLOR_CHOICES = [
   "#7A4B2E",
   "#4A7A3F",
   "#8A7A99",
+  "#E8B923",
+  "#F08A24",
+  "#E5484D",
+  "#C2410C",
+  "#0E9F8E",
+  "#2BB3E0",
+  "#1E5FAF",
+  "#6D28D9",
+  "#A3A83A",
+  "#6B7280",
+  "#374151",
 ];
 
 const emptyForm = { name: "", icon: "other" as IconName, color: COLOR_CHOICES[0], isFuel: false };

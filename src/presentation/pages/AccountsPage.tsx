@@ -23,6 +23,17 @@ const COLOR_CHOICES = [
   "#B0473F",
   "#4A7A3F",
   "#8A7A99",
+  "#E8B923",
+  "#F08A24",
+  "#E5484D",
+  "#C2410C",
+  "#0E9F8E",
+  "#2BB3E0",
+  "#1E5FAF",
+  "#6D28D9",
+  "#A3A83A",
+  "#6B7280",
+  "#374151",
 ];
 
 const emptyForm = { name: "", type: "card" as AccountType, color: COLOR_CHOICES[0] };

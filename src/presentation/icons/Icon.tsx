@@ -33,7 +33,12 @@ export type IconName =
   | "loans"
   | "pets"
   | "gifts"
-  | "travel";
+  | "travel"
+  | "tools"
+  | "car"
+  | "labor"
+  | "investment"
+  | "tech";
 
 const paths: Record<IconName, ReactElement> = {
   dashboard: (
@@ -250,6 +255,39 @@ const paths: Record<IconName, ReactElement> = {
     </>
   ),
   travel: <path d="M3 12 21 4l-6 17-4-7-7-3z" />,
+  tools: (
+    <path d="M14.5 6.5a4 4 0 0 0 5 5L10 21l-3-3 9.5-9.5a4 4 0 0 1-2-2zM14.5 6.5l3-3 3 3-3 3" />
+  ),
+  car: (
+    <>
+      <path d="M4 16v-4l2-5h12l2 5v4z" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <circle cx="8" cy="17" r="1.6" />
+      <circle cx="16" cy="17" r="1.6" />
+    </>
+  ),
+  labor: (
+    <>
+      <path d="M5 15a7 7 0 0 1 14 0z" />
+      <line x1="3" y1="15" x2="21" y2="15" />
+      <line x1="12" y1="8" x2="12" y2="5" />
+      <path d="M6 19h12" />
+    </>
+  ),
+  investment: (
+    <>
+      <path d="M4 19V5" />
+      <path d="M4 19h16" />
+      <path d="m7 15 4-4 3 3 6-7" />
+      <path d="M16 7h4v4" />
+    </>
+  ),
+  tech: (
+    <>
+      <rect x="4" y="5" width="16" height="11" rx="1.5" />
+      <line x1="2" y1="19" x2="22" y2="19" />
+    </>
+  ),
 };
 
 interface IconProps extends SVGProps<SVGSVGElement> {
